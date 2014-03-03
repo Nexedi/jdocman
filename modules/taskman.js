@@ -11,7 +11,7 @@ $(document).on('mobileinit', function () {
 
   Logger.setLevel(DEBUG ? Logger.DEBUG : Logger.WARN);
 
-  var ATTACHMENT_MODE = 'none',   // 'none', 'single', 'multiple'
+  var ATTACHMENT_MODE = 'multiple',   // 'none', 'single', 'multiple'
     SINGLE_ATTACHMENT_NAME = 'content',
     template = {
       // precompile for speed
