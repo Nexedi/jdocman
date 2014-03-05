@@ -452,15 +452,11 @@ $(document).on('mobileinit', function () {
 
 
   $(document).on('click', '#dropbox-login', function () {
-    var dropbox_base_url = 'https://www.dropbox.com/1/',
-      auth_path = 'oauth2/authorize',
-      response_type = 'token',
-      client_id = 'e0w2k12133ao0bu',
-      redirect_uri = 'http://localhost/taskman/index.html';
-    $('#dropbox-login').attr('href', dropbox_base_url + auth_path +
-                            '?response_type=' + response_type +
+    var client_id = 'e0w2k12133ao0bu';
+    $('#dropbox-login').attr('href', 'https://www.dropbox.com/1/oauth2/authorize' +
+                            '?response_type=token' +
                             '&client_id=' + client_id +
-                            '&redirect_uri=' + redirect_uri);
+                            '&redirect_uri=' + location.href.replace(location.hash, ''));
   });
 
 
@@ -1355,9 +1351,8 @@ $(document).on('mobileinit', function () {
   });
 
 
-  function setCurrentStorageToken() {
-    var args = parseHashParams('#?' + window.location.hash.substr(1)),
-      storage_id = getSelectedStorage(),
+  function setCurrentStorageToken(access_token) {
+    var storage_id = getSelectedStorage(),
       jc = null;
 
     jioConfigConnect().
@@ -1370,7 +1365,7 @@ $(document).on('mobileinit', function () {
       }).
       then(function (ev) {
         var config = JSON.parse(ev.target.result);
-        config.access_token = args.access_token;
+        config.access_token = access_token;
         var attachment = {
           _id: storage_id,
           _attachment: 'config',
@@ -1388,9 +1383,21 @@ $(document).on('mobileinit', function () {
    * Initial rendering of the 'document list' page.
    */
   $(document).on('pagebeforeshow', '#document-list-page', function () {
+    var args = parseHashParams('#?' + window.location.hash.substr(1));
 
-    if (window.location.hash.indexOf('#access_token') === 0) {
-      setCurrentStorageToken();
+    // Success from OAuth2
+    if (args.access_token) {
+      setCurrentStorageToken(args.access_token);
+      return;
+    }
+
+    // Error from OAuth2
+    if (args.error && args.error_description) {
+      displayError({
+        statusText: args.error,
+        message: args.error_description.replace(/\+/g, ' ')
+      });
+      return;
     }
 
     jioConnect().then(function (jio) {
