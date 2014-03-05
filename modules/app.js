@@ -1391,18 +1391,19 @@ $(document).on('mobileinit', function () {
       return;
     }
 
-    // Error from OAuth2
-    if (args.error && args.error_description) {
-      displayError({
-        statusText: args.error,
-        message: args.error_description.replace(/\+/g, ' ')
-      });
-      return;
-    }
-
     jioConnect().then(function (jio) {
       // attempt to fix cosmetic issue with a select menu in the header
       $('#document-sortby-button').addClass('ui-btn-left');
+
+      // XXX Error from OAuth2, this does not work outside jioConnect()
+      if (args.error && args.error_description) {
+        displayError({
+          statusText: args.error,
+          message: args.error_description.replace(/\+/g, ' ')
+        });
+        return;
+      }
+
       return updateDocumentList(jio);
     }).fail(displayError);
   });
